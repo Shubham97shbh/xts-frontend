@@ -28,7 +28,9 @@ h1 {
   color: #333;
   margin-bottom: 30px;
 }
-
+.index-select option:first-child {
+  color: lightgray;
+}
 .row {
   display: flex;
   flex-wrap: wrap;
@@ -37,7 +39,11 @@ h1 {
 }
 
 .input-container {
-  width: calc(50% - 10px);
+  width: calc(25% - 10px);
+}
+
+.input-container-selector {
+  width: calc(33.33% - 10px);
 }
 
 .input-container label {
