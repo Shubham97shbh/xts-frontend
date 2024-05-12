@@ -1,0 +1,111 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #e3e9e9;
+}
+
+.container_main {
+  width: 90%;
+  margin: 50px auto;
+  background-color: #e3e9e9;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.container_sub {
+  width: 80%;
+  margin: 50px auto;
+  background-color: #7dd6de;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 30px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.input-container {
+  width: calc(50% - 10px);
+}
+
+.input-container label {
+  display: block;
+  margin-bottom: 5px;
+  color: #555;
+}
+
+input[type="number"],
+select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+button {
+  background-color: #007bff;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:active {
+  background-color: #00478f;
+}
+.new-row {
+  margin-top: 10px; /* Adjust spacing between rows */
+}
+
+.new-row {
+  margin-bottom: 20px; /* Add margin bottom for white space */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  background-color: #f9f9f9; /* Light gray background */
+  transition: background-color 0.3s ease; /* Smooth transition effect */
+
+  /* Hover effect */
+  cursor: pointer;
+}
+
+.new-row:hover {
+  background-color: #4adc79; /* Darker gray background on hover */
+}
+
+.delete-button {
+  margin-left: auto; /* Shift the button to the right side */
+  background-color: #dc3545; /* Red background color */
+  color: white; /* White text color */
+  border: none; /* Remove border */
+  border-radius: 3px; /* Add some border radius */
+  padding: 5px 10px; /* Add padding */
+  cursor: pointer; /* Change cursor on hover */
+  transition: background-color 0.3s ease; /* Smooth transition effect */
+}
+
+.delete-button:hover {
+  background-color: #c82333; /* Darker red background on hover */
+}
