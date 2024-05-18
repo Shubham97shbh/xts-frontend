@@ -20,6 +20,12 @@ def demo(request:dict):
     val = random.choice(['Buy', 'Sell'])    
     return {'message':'Success', 'trade':val}
 
+@app.get('/api/xts/logs/{process_id}')
+def demo_1(process_id:int):
+    print(process_id)
+    val = random.choice(['Buy', 'Sell'])    
+    return {'message':'Success', 'trade':val, 'logs':[f'{process_id}']}
+
 if __name__=='__main__':
     import uvicorn
     uvicorn.run(app, host='localhost', port=8000)
