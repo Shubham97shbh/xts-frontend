@@ -115,3 +115,16 @@ button:active {
 .delete-button:hover {
   background-color: #c82333; /* Darker red background on hover */
 }
+
+.logs-tab {
+  display: none; /* Initially hidden */
+  background-color: white;
+  position: absolute;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 10;
+}
+
+.new-row:hover .logs-tab {
+  display: block; /* Show on hover */
+}
