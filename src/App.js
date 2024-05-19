@@ -1,34 +1,46 @@
 import React, { useState } from 'react';
 import './App.css';
+import InputForm from './InputForm';
+import ProcessList from './ProcessList';
+import loadingGif from './loading.gif'; // Import the loading GIF
 
 function App() {
-  const [processes, setProcesses] = useState([]);
-  const [boxes, setBoxes] = useState([]);
-  const [nextId, setNextId] = useState(1); // State to manage the next unique ID
-  const [index, setIndex] = useState(""); // State for INDEX input value
-  const [trade, setTrade] = useState(""); // State for Trade input value
-  const [slPercentage, setSlPercentage] = useState(""); // State for SL % input value
-  const [ceRentry, setCeRentry] = useState(""); // State for CE RENTRY input value
-  const [peRentry, setPeRentry] = useState(""); // State for PE RENTRY input value
-  const [trailingSL, setTrailingSL] = useState(""); // State for TRAILING SL input value
-  const [trailingTP, setTrailingTP] = useState(""); // State for TRAILING TP input value
-  const [otmgap, setOtmgap] = useState(""); // State for OTM GAP input value
-  const [ispoint, setIsPoint] = useState(""); // State for IS POINT input value
-  const [SLflag, setSLFlag] = useState(""); // State for SL FLAG input value
-  const [error, setError] = useState("");
-  const [qty, setQty] = useState(""); // lot input
-  const [logs, setLogs] = useState({}); // State for logs per box
+  const [state, setState] = useState({
+    processes: [],
+    boxes: [],
+    nextId: 1,
+    index: "",
+    trade: "",
+    slPercentage: "",
+    ceRentry: "",
+    peRentry: "",
+    trailingSL: "",
+    trailingTP: "",
+    otmgap: "",
+    ispoint: "",
+    SLflag: "",
+    error: "",
+    qty: "",
+    logs: {},
+    loading: false
+  });
+
+  const updateState = (key, value) => {
+    setState(prevState => ({
+      ...prevState,
+      [key]: value
+    }));
+  };
 
   const handleStart = async () => {
-    if (!index || !slPercentage || !ceRentry || !peRentry || !trailingSL || !trailingTP || !trade) {
-      setError("All fields are required.");
+    if (!state.index || !state.slPercentage || !state.ceRentry || !state.peRentry || !state.trailingSL || !state.trailingTP || !state.trade) {
+      updateState("error", "All fields are required.");
       return;
     }
     try {
-      // Generate a unique digit
+      updateState("loading", true);
       const uniqueDigitValue = Math.floor(Math.random() * 1000);
 
-      // Send a POST request to start the process with the dynamic unique digit
       const response = await fetch("http://localhost:8000/api/xts/start_app", {
         method: "POST",
         headers: {
@@ -36,17 +48,17 @@ function App() {
         },
         body: JSON.stringify({
           process_id: uniqueDigitValue,
-          index: index,
-          qty: qty,
-          trade: trade,
-          otm_gap: otmgap,
-          slPercentage: slPercentage,
-          ceRentry: ceRentry,
-          peRentry: peRentry,
-          trailingSL: trailingSL,
-          trailingTP: trailingTP,
-          isPoint: ispoint,
-          SLflag: SLflag
+          index: state.index,
+          qty: state.qty,
+          trade: state.trade,
+          otm_gap: state.otmgap,
+          slPercentage: state.slPercentage,
+          ceRentry: state.ceRentry,
+          peRentry: state.peRentry,
+          trailingSL: state.trailingSL,
+          trailingTP: state.trailingTP,
+          isPoint: state.ispoint,
+          SLflag: state.SLflag
         }),
       });
 
@@ -56,47 +68,37 @@ function App() {
 
       const data = await response.json();
 
-      // Add the new process to the processes array
-      console.log("Adding new process:", data.process_id);
-      setProcesses((prevProcesses) => [
-        ...prevProcesses,
-        { processId: data.process_id, uniqueDigit: uniqueDigitValue },
-      ]);
-
-      // Add a new box with a unique ID
-      console.log("Adding new box:", uniqueDigitValue);
-      setBoxes((prevBoxes) => [
-        ...prevBoxes,
-        {
-          id: nextId, uniqueDigit: uniqueDigitValue, trade: trade,
-          strike_ce: data.strike_ce, strike_pe: data.strike_pe,
-          ce_instrument_id: data.ce_instrument_id, pe_instrument_id: data.pe_instrument_id
-        } // Use the nextId as the unique ID
-      ]);
-      setNextId(prevId => prevId + 1); // Increment nextId for the next box
+      setState(prevState => ({
+        ...prevState,
+        processes: [...prevState.processes, { processId: data.process_id, uniqueDigit: uniqueDigitValue }],
+        boxes: [...prevState.boxes, {
+          id: prevState.nextId,
+          uniqueDigit: uniqueDigitValue,
+          trade: state.trade,
+          strike_ce: data.strike_ce,
+          strike_pe: data.strike_pe,
+          ce_instrument_id: data.ce_instrument_id,
+          pe_instrument_id: data.pe_instrument_id
+        }],
+        nextId: prevState.nextId + 1,
+        loading: false
+      }));
     } catch (error) {
+      updateState("loading", false);
       console.error('Error starting the process:', error.message);
     }
   };
 
   const handleDelete = (id) => {
-    console.log("Deleting box:", id);
-    setBoxes((prevBoxes) => prevBoxes.filter((box) => box.id !== id));
-  };
-
-  const handleIndexChange = (e) => {
-    console.log("Selected Index:", e.target.value);
-    setIndex(e.target.value);
-  };
-
-  const handleTradeChange = (e) => {
-    console.log("Selected Trade:", e.target.value);
-    setTrade(e.target.value);
+    setState(prevState => ({
+      ...prevState,
+      boxes: prevState.boxes.filter(box => box.id !== id)
+    }));
   };
 
   const handleBoxHover = async (uniqueDigit) => {
     try {
-      // Fetch logs from the API
+      updateState("loading", true);
       const response = await fetch(`http://localhost:8000/api/xts/logs/${uniqueDigit}`, {
         method: "GET",
         headers: {
@@ -107,100 +109,30 @@ function App() {
         throw new Error("Failed to fetch logs. Status: " + response.status);
       }
       const data = await response.json();
-      setLogs((prevLogs) => ({
-        ...prevLogs,
-        [uniqueDigit]: data.logs,
-      })); // Set the logs in state per uniqueDigit
+      setState(prevState => ({
+        ...prevState,
+        logs: {
+          ...prevState.logs,
+          [uniqueDigit]: data.logs
+        },
+        loading:false
+      }));
     } catch (error) {
       console.error('Error fetching logs:', error.message);
+      updateState("loading", false);
+
     }
   };
 
   return (
     <div className="container_main">
-      <div className="container_sub">
-        <h1>Trading Platform</h1>
-        <div className="row">
-          <div className="input-container">
-            <label className='qty'>QUANTITY</label>
-            <input type="number" id="qty" onChange={(e) => setQty(e.target.value)} />
-          </div>
-          <div className="input-container">
-            <label htmlFor="dropdown1">TRADE</label>
-            <select id="dropdown1" className="index-select" value={trade} onChange={handleTradeChange}>
-              <option value="">Select Trade</option> {/* Default option */}
-              <option value="SELL">SELL</option>
-              <option value="BUY">BUY</option>
-            </select>
-          </div>
-          <div className="input-container">
-            <label htmlFor="dropdown1">INDEX</label>
-            <select id="dropdown1" className="index-select" value={index} onChange={handleIndexChange}>
-              <option value="">Select Index</option> {/* Default option */}
-              <option value="BANKNIFTY">BANKNIFTY</option>
-              <option value="NIFTY">NIFTY</option>
-              <option value="FILNIFTY">FILNIFTY</option>
-              <option value="FINNIFTY">FINNIFTY</option>
-            </select>
-          </div>
-          <div className="input-container">
-            <label htmlFor="slPercentage">SL %</label>
-            <input type="number" id="slPercentage" min="0" max="100" onChange={(e) => setSlPercentage(e.target.value)} />
-          </div>
+      {state.loading && 
+        <div className="loading-container">
+          <img src={loadingGif} alt="Loading..." className="loading-icon" />
         </div>
-        <div className="row">
-          <div className="input-container">
-            <label htmlFor="ceRentry">CE RENTRY</label>
-            <input type="number" id="ceRentry" min="0" onChange={(e) => setCeRentry(e.target.value)} />
-          </div>
-          <div className="input-container">
-            <label htmlFor="peRentry">PE RENTRY</label>
-            <input type="number" id="peRentry" min="0" onChange={(e) => setPeRentry(e.target.value)} />
-          </div>
-          <div className="input-container">
-            <label htmlFor="trailingSL">TRAILING SL</label>
-            <input type="number" id="trailingSL" min="0" onChange={(e) => setTrailingSL(e.target.value)} />
-          </div>
-          <div className="input-container">
-            <label htmlFor="trailingTP">TRAILING TP</label>
-            <input type="number" id="trailingTP" min="0" onChange={(e) => setTrailingTP(e.target.value)} />
-          </div>
-        </div>
-        <div className="row">
-          <div className="input-container-selector">
-            <label htmlFor="otm_gap">OTM</label>
-            <input type="number" id="otm_gap" min="0" max="20" onChange={(e) => setOtmgap(e.target.value)} />
-          </div>
-          <div className="input-container-selector">
-            <input type="checkbox" id="SLflag" name="SLflag" onChange={(e) => setSLFlag(e.target.checked)} value="true" />
-            <label htmlFor="SLflag">SL-FLAG</label>
-          </div>
-          <div className="input-container-selector">
-            <input type="checkbox" id="isPoint" name="isPoint" onChange={(e) => setIsPoint(e.target.checked)} value="true" />
-            <label htmlFor="isPoint">Is Point</label>
-          </div>
-        </div>
-        <div className="row">
-          <div className="input-container">
-            <button id="startButton" onClick={handleStart}>Start</button>
-          </div>
-        </div>
-        {error && <p className="error">{error}</p>}
-      </div>
-      <div>
-        {boxes.map((box) => (
-          <div key={box.id} className="new-row" onMouseEnter={() => handleBoxHover(box.uniqueDigit)}>
-            <label>Process ID: {box.uniqueDigit} Trade: {box.trade} Strike CE: {box.strike_ce} Strike PE: {box.strike_pe}</label>
-            <button className="delete-button" onClick={() => handleDelete(box.id)}>Square off</button>
-            {/* Display logs on hover */}
-            <div className="logs-tab">
-              {(logs[box.uniqueDigit] || []).map((log, index) => (
-                <div key={index}>{log}</div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
+      }
+      <InputForm state={state} updateState={updateState} handleStart={handleStart} />
+      <ProcessList state={state} handleDelete={handleDelete} updateState={updateState} handleBoxHover={handleBoxHover} />
     </div>
   );
 }

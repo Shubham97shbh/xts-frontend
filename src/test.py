@@ -13,10 +13,12 @@ app.add_middleware(
 )
 
 import random
+import time 
 
 @app.post('/api/xts/start_app')
 def demo(request:dict):
     print(request)
+    time.sleep(2)
     val = random.choice(['Buy', 'Sell'])    
     return {'message':'Success', 'trade':val}
 
